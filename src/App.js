@@ -1,10 +1,14 @@
 import React from "react";
 import s from "./App.module.scss"
+import { OLMap } from "./components/map/Map";
+import { Menu } from "./components/menu/Menu";
+
 
 function App() {
   return (
     <div className={s.app}>
-      Hello World!
+      <Menu />
+      <OLMap/>
     </div>
   );
 }
