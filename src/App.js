@@ -1,5 +1,5 @@
 import React from "react";
-import s from "./App.module.scss"
+import s from "./App.module.css"
 import { OLMap } from "./components/map/Map"
 import { Menu } from "./components/menu/Menu"
 

@@ -6,7 +6,7 @@ import {
   RadioGroup,
 } from "@mui/material";
 
-import s from "./Menu.module.scss";
+import s from "./Menu.module.css";
 import list from "../../JSON/getRoutes.json";
 
 export const Menu = () => {

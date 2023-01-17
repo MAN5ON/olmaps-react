@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import s from "./Map.module.scss";
+import s from "./Map.module.css";
 import "./OLDefaultStyles.css";
 
 import Map from "ol/Map";
