@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Button,
   FormControl,
   FormControlLabel,
   Radio,
@@ -11,7 +10,6 @@ import s from "./Menu.module.scss";
 import list from "../../JSON/getRoutes.json";
 
 export const Menu = () => {
-
   // Ошибка CORS политики, если создатели тестового её пофиксят, то получаю json так:
   // const [list, setList] = useState(routes);
   // fetch("https://janti.ru:5381/Main/GetRoutes")
@@ -22,7 +20,15 @@ export const Menu = () => {
   //   });
 
   const [menuActive, setMenuActive] = useState(false);
-  const [route, changeRoute] = useState();
+  const [value, setValue] = React.useState("");
+
+  function handleClick(event) {
+    if (event.target.value === value) {
+      setValue("");
+    } else {
+      setValue(event.target.value);
+    }
+  }
 
   return (
     <div className={s.navbar}>
@@ -33,25 +39,17 @@ export const Menu = () => {
       </nav>
       <div className={menuActive ? s.menuActive : s.menu}>
         <FormControl>
-          <RadioGroup
-            name="radio-buttons-group"
-            defaultValue={null}
-            value={route}
-            onChange={(e) => {
-              changeRoute(e.target.value);
-            }}
-          >
+          <RadioGroup name="radio-buttons-group" value={value}>
             {list.map((item) => (
               <FormControlLabel
                 key={item.id}
                 value={item.id}
-                control={<Radio />}
+                control={<Radio onClick={handleClick} />}
                 label={item.name}
               />
             ))}
           </RadioGroup>
         </FormControl>
-        <Button onClick={()=> changeRoute(null)} variant="contained">Reset</Button>
       </div>
     </div>
   );
