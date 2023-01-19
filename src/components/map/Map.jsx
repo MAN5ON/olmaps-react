@@ -6,8 +6,9 @@ import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
+import VectorSource from 'ol/source/Vector.js';
 import XYZ from "ol/source/XYZ";
+import { fromLonLat } from "ol/proj";
 
 import { ZoomSlider } from "ol/control.js";
 import MultiPoint from "ol/geom/MultiPoint.js";
@@ -16,30 +17,31 @@ import Feature from "ol/Feature.js";
 
 import { Circle, Stroke, Style } from "ol/style.js";
 import Fill from "ol/style/Fill";
+import { useSelector } from "react-redux";
 
 export const OLMap = () => {
-  const [routes, setRoutes] = useState([]);
-
   const [map, setMap] = useState();
-  const [view, setView] = useState();
+  const currentCoord = useRef();
 
-  fetch("https://janti.ru:5381/Main/GetRouteData?id=3")
-    .then((response) => response.json())
-    .then((data) => setRoutes(data))
-    .catch((err) => {
-      console.log(err);
-    });
+  const coords = useSelector((state) => state.coords);
+  const routeObj = useSelector((state) => state.route);
 
-  const currentRoute = routes.map((item) => [item.lon, item.lat]);
+  try {
+    currentCoord.current = coords.items.map((item) => [item.lon, item.lat]);
+  } catch (error) {
+    currentCoord.current = 0;
+  }
+
   const mapElement = useRef();
 
   useEffect(() => {
+    //первый рендер, инициализация карты
     const initalFeaturesLayer = new VectorLayer({
       source: new VectorSource(),
     });
 
     const view = new View({
-      center: [0, 0],
+      center: fromLonLat([70, 65]),
       zoom: 4,
       minZoom: 2,
       maxZoom: 15,
@@ -60,73 +62,73 @@ export const OLMap = () => {
     //Zoom
     const zoomslider = new ZoomSlider();
     map.addControl(zoomslider);
-
     setMap(map);
-    setView(view);
-  }, []);
+  },[]);
 
-  useEffect(() => {
-    //Routes
-    if (routes.length) {
-      const points = new MultiPoint(currentRoute).transform(
-        "EPSG:4326",
-        "EPSG:3857"
-      );
+  if (coords.isLoaded) {
+    //очистить слой перед отрисовкой
+    map.getLayers().forEach(layer => {
+      if (layer.get('name') && layer.get('name') === 'route_vectorLayer'){
+          map.removeLayer(layer)
+      }
+    });
 
-      const route = new LineString(currentRoute).transform(
-        "EPSG:4326",
-        "EPSG:3857"
-      );
+    //точки
+    const points = new MultiPoint(currentCoord.current).transform(
+      "EPSG:4326",
+      "EPSG:3857"
+    );
 
-      const pointsFeature = new Feature({
-        type: "points",
-        geometry: points,
-      });
+    const pointsFeature = new Feature({
+      type: "points",
+      geometry: points,
+    });
 
-      const routeFeature = new Feature({
-        type: "route",
-        geometry: route,
-      })
+    //линия
+    const route = new LineString(currentCoord.current).transform(
+      "EPSG:4326",
+      "EPSG:3857"
+    );
 
-      const styles = {
-        points: new Style({
-          image: new Circle({
-            radius: 3,
-            fill: new Fill({
-              color: [200, 100, 100, 0.5],
-            }),
+    const routeFeature = new Feature({
+      type: "route",
+      geometry: route,
+    });
+    
+    //cтии для них
+    const styles = {
+      points: new Style({
+        image: new Circle({
+          radius: 3,
+          fill: new Fill({
+            color: routeObj.items[routeObj.activeValue].color,
           }),
         }),
-        route: new Style({
-          stroke: new Stroke({
-            width: 2,
-            color: [100, 200, 100, 0.5],
-          })
-        })
-      };
-
-      const vectorLayer = new VectorLayer({
-        source: new VectorSource({
-          features: [pointsFeature, routeFeature],
+      }),
+      route: new Style({
+        stroke: new Stroke({
+          width: 2,
+          color: routeObj.items[routeObj.activeValue].color,
         }),
-        style: function (feature) {
-          return styles[feature.get("type")];
-        },
-      });
+      }),
+    };
 
-      map.addLayer(vectorLayer);
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource({
+        features: [routeFeature, pointsFeature],
+      }),
+      style: function (feature) {
+        return styles[feature.get("type")];
+      },
+    });
 
-      //Overlay
-      //   const popup = new Overlay({
-      //     element: document.getElementById("popup"),
-      //   });
-      //   map.addOverlay(popup);
-    }
-  }, [routes, currentRoute, map, view]);
+    vectorLayer.set('name', 'route_vectorLayer');
+    map.addLayer(vectorLayer);
+  }
 
   return (
     <div className={s.mapWrapper}>
-      <div ref={mapElement} className={s.map} id="map"></div>)
+      <div ref={mapElement} className={s.map} id="map"></div>
     </div>
   );
 };
