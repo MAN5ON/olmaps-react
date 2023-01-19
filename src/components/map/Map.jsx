@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import s from "../styles/Map.module.css";
 import "../styles/OLDefaultStyles.css";
-
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
-import VectorSource from 'ol/source/Vector.js';
+import VectorSource from "ol/source/Vector.js";
 import XYZ from "ol/source/XYZ";
 import { fromLonLat } from "ol/proj";
-
 import { ZoomSlider } from "ol/control.js";
 import MultiPoint from "ol/geom/MultiPoint.js";
 import LineString from "ol/geom/LineString.js";
+import Point from "ol/geom/Point.js";
 import Feature from "ol/Feature.js";
 
-import { Circle, Stroke, Style } from "ol/style.js";
+import { Circle, Stroke, Style, Icon } from "ol/style.js";
 import Fill from "ol/style/Fill";
 import { useSelector } from "react-redux";
 
@@ -63,25 +62,14 @@ export const OLMap = () => {
     const zoomslider = new ZoomSlider();
     map.addControl(zoomslider);
     setMap(map);
-  },[]);
+  }, []);
 
   if (coords.isLoaded) {
     //очистить слой перед отрисовкой
-    map.getLayers().forEach(layer => {
-      if (layer.get('name') && layer.get('name') === 'route_vectorLayer'){
-          map.removeLayer(layer)
+    map.getLayers().forEach((layer) => {
+      if (layer.get("name") && layer.get("name") === "route_vectorLayer") {
+        map.removeLayer(layer);
       }
-    });
-
-    //точки
-    const points = new MultiPoint(currentCoord.current).transform(
-      "EPSG:4326",
-      "EPSG:3857"
-    );
-
-    const pointsFeature = new Feature({
-      type: "points",
-      geometry: points,
     });
 
     //линия
@@ -94,8 +82,28 @@ export const OLMap = () => {
       type: "route",
       geometry: route,
     });
-    
-    //cтии для них
+
+    //точки маршрута
+    const pointsFeature = new Feature({
+      type: "points",
+      geometry: new MultiPoint(currentCoord.current).transform(
+        "EPSG:4326",
+        "EPSG:3857"
+      ),
+    });
+
+    //иконки
+    const start = new Feature({
+      type: "start",
+      geometry: new Point(route.getFirstCoordinate()),
+    });
+
+    const end = new Feature({
+      type: "end",
+      geometry: new Point(route.getLastCoordinate()),
+    });
+
+    //cтили для них
     const styles = {
       points: new Style({
         image: new Circle({
@@ -111,18 +119,30 @@ export const OLMap = () => {
           color: routeObj.items[routeObj.activeValue].color,
         }),
       }),
+      start: new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          src: "https://img.icons8.com/material-outlined/24/map-pin.png",
+        }),
+      }),
+      end: new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          src: "https://img.icons8.com/material-rounded/24/map-pin.png",
+        }),
+      }),
     };
 
     const vectorLayer = new VectorLayer({
       source: new VectorSource({
-        features: [routeFeature, pointsFeature],
+        features: [routeFeature, pointsFeature, start, end],
       }),
       style: function (feature) {
         return styles[feature.get("type")];
       },
     });
 
-    vectorLayer.set('name', 'route_vectorLayer');
+    vectorLayer.set("name", "route_vectorLayer");
     map.addLayer(vectorLayer);
   }
 
