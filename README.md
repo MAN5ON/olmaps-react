@@ -3,7 +3,7 @@
 - :green_circle: - задача реализована;
 - :red_circle: - ззадача **не** реализована;
 ---
-В проекте использованы: **``OpenLayers``, ``React``, ``Redux-Toolkit``, ``Axios``, ``MUI``**
+В проекте использованы: **``OpenLayers`` ``React`` ``Redux-Toolkit`` ``Axios`` ``MUI``**
 
 Основные задачи:
 - :green_circle: страница создана с использованием **React**;
