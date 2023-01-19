@@ -1,8 +1,10 @@
 # Routes-Map
-Использованы: **OpenLayers, React, Redux-Toolkit, Axios, MUI**
+
 - :green_circle: - задача реализована;
 - :red_circle: - ззадача **не** реализована;
 ---
+В проекте использованы: **``OpenLayers``, ``React``, ``Redux-Toolkit``, ``Axios``, ``MUI``**
+
 Основные задачи:
 - :green_circle: страница создана с использованием **React**;
 - :green_circle: На странице отображается карта с использованием **OpenLayers**;
