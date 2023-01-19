@@ -5,7 +5,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 export const fetchCoords = createAsyncThunk('coords/fetchCoords', async (id) => {
     return axios
         .get(`https://janti.ru:5381/Main/GetRouteData?id=${id}`)
-        .then(response => response.data)  
+        .then(response => response.data)
 })
 
 const coordsSlice = createSlice({
@@ -32,6 +32,5 @@ const coordsSlice = createSlice({
         })
     }
 })
-
 
 export default coordsSlice.reducer
